@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -14,19 +15,31 @@ pipeline {
             }
         }
 
-        stage('Run Program') {
+        stage('Build Docker Image') {
             steps {
-                sh 'echo "Input file content:"'
-                sh 'cat input.txt'
-                sh 'java Numbergame11 < input.txt'
+                sh 'docker build -t numberguess-app:latest .'
             }
         }
 
-        stage('Archive Artifacts') {
+        stage('Stop Old Container') {
             steps {
-                archiveArtifacts artifacts: '*.class'
+                script {
+                    sh """
+                    if [ \$(docker ps -aq -f name=numberguess-container) ]; then
+                        docker stop numberguess-container || true
+                        docker rm numberguess-container || true
+                    fi
+                    """
+                }
             }
         }
+
+        stage('Run Container') {
+            steps {
+                sh 'docker run -d --name numberguess-container numberguess-app:latest'
+            }
+        }
+
     }
 
     post {
