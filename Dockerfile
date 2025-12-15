@@ -1,11 +1,8 @@
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-COPY Numbergame11.java .
-COPY input.txt .
-
-RUN javac Numbergame11.java
+COPY Numbergame11.class .
 
 CMD ["java", "Numbergame11"]
 
