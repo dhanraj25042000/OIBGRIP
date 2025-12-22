@@ -25,7 +25,7 @@ pipeline {
                 sh '''
                 docker run --rm \
                   -e SONAR_HOST_URL=http://host.docker.internal:9000 \
-                  -e SONAR_LOGIN=$SONAR_TOKEN \
+                  -e SONAR_TOKEN=$SONAR_TOKEN \
                   -v "$PWD:/usr/src" \
                   sonarsource/sonar-scanner-cli \
                   -Dsonar.projectKey=numberguess-app \
