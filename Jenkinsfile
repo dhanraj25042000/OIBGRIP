@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        SONAR_TOKEN = credentials('sonar-token')
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -14,6 +18,22 @@ pipeline {
                 sh 'javac Numbergame11.java'
             }
         }
+
+        /* ---------------- SONARQUBE STAGE ---------------- */
+        stage('SonarQube Code Quality Scan') {
+            steps {
+                sh '''
+                docker run --rm \
+                  -e SONAR_HOST_URL=http://host.docker.internal:9000 \
+                  -e SONAR_LOGIN=$SONAR_TOKEN \
+                  -v "$PWD:/usr/src" \
+                  sonarsource/sonar-scanner-cli \
+                  -Dsonar.projectKey=numberguess-app \
+                  -Dsonar.sources=.
+                '''
+            }
+        }
+        /* ------------------------------------------------- */
 
         stage('Build Docker Image') {
             steps {
@@ -56,10 +76,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline executed successfully with security checks!'
+            echo 'Pipeline executed successfully with SonarQube & Trivy checks!'
         }
         failure {
-            echo 'Pipeline failed due to build or security issues!'
+            echo 'Pipeline failed due to build, quality, or security issues!'
         }
     }
 }
